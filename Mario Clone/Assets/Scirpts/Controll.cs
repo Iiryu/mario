@@ -4,16 +4,23 @@ using UnityEngine;
 
 public class Controll : MonoBehaviour
 {
-    float horizontal = 0f;
     public Rigidbody2D rb;
     public AudioClip jump;
     public AudioSource audioSource;
-    public bool dead;
     public Animator anim = null;
     public bool isGround;
     public SpriteRenderer r;
     public Manager m;
+    public bool stop;
     public bool bigver = false;
+    public AudioClip deadS;
+    public AudioClip killMob;
+    public bool dead = false;
+    public GameObject goalpool;
+    int i;
+    int a;
+    float b;
+    public bool poop = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -26,41 +33,107 @@ public class Controll : MonoBehaviour
     {
         Jump();
         Move();
+        Dead();
+        GoalMove();
+        DeadCheck();
         m.player.transform.position = this.gameObject.transform.position;
     }
 
     void Jump()
     {
-        if (Input.GetButtonDown("Jump")&& isGround == true)
+        if(stop == false)
         {
-            audioSource.PlayOneShot(jump);
-            rb.AddForce(transform.up * 190);
-            anim.SetBool("Jump", true);
+            if (Input.GetButtonDown("Jump") && isGround == true)
+            {
+                audioSource.PlayOneShot(jump);
+                rb.AddForce(transform.up * 190);
+                anim.SetBool("Jump", true);
+            }
+            if (isGround == true)
+            {
+                anim.SetBool("Jump", false);
+            }
         }
-        if (isGround == true)
+    }
+
+    void Dead()
+    {
+        if(dead == true)
         {
-            anim.SetBool("Jump", false);
+            audioSource.PlayOneShot(deadS);
+            dead = false;
+        }
+    }
+
+    void DeadCheck()
+    {
+        if(dead == false)
+        {
+            if (this.gameObject.transform.position.y <= 0)
+            {
+                if (i == 0)
+                {
+                    i += 1;
+                    dead = true;
+                    m.gameover = true;
+                    Debug.Log("this gameobject pos -y");
+                }
+            }
         }
     }
 
     void Move()
     {
-        if (Input.GetKey("a"))
+        if (stop == false)
         {
-            r.flipX = true;
-            anim.SetBool("Run", true);
-            transform.position -= transform.right * Time.deltaTime;
+            if (Input.GetKey("a"))
+            {
+                r.flipX = true;
+                anim.SetBool("Run", true);
+                transform.position -= transform.right * Time.deltaTime;
+            }
+            if (Input.GetKey("d"))
+            {
+                r.flipX = false;
+                anim.SetBool("Run", true);
+                transform.position += transform.right * Time.deltaTime;
+            }
+            else
+            {
+                anim.SetBool("Run", false);
+            }
         }
-        if (Input.GetKey("d"))
+    }
+
+    void GoalMove()
+    {
+        if(m.goal == true)
         {
-            r.flipX = false;
-            anim.SetBool("Run", true);
-            transform.position += transform.right * Time.deltaTime;
+            stop = true;
+            poop = true;
+
+            if (a == 0)
+            {
+                a += 1;
+                this.gameObject.transform.position = goalpool.gameObject.transform.position;
+            }
         }
-        else
+        if (m.goaldoor == false)
         {
-            anim.SetBool("Run", false);
+            if (poop == true)
+            {
+                transform.position += transform.right * Time.deltaTime;
+                Debug.Log("true");
+            }
+        }
+
+        if (m.goalDoor == true)
+        {
             Debug.Log("a");
+            m.gameover = false;
+            m.goal = false;
+            m.goaldoor = false;
+            poop = false;
         }
     }
 
@@ -81,12 +154,21 @@ public class Controll : MonoBehaviour
         if(collision.gameObject.tag == "MOB")
         {
             m.gameover = true;
-            Debug.Log("mob");
+            dead = true;
+            Debug.Log("dead");
         }
         if (collision.gameObject.tag == "beBig")
         {
             bigver = true;
             Debug.Log("big");
+        }
+        if (collision.gameObject.tag == "CanKill")
+        {
+            audioSource.PlayOneShot(killMob);
+            Destroy(collision.gameObject.transform.parent.gameObject);
+            rb.AddForce(transform.up * 120);
+            Debug.Log("kill");
+            m.bug = true;
         }
     }
 

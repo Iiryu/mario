@@ -5,17 +5,16 @@ using UnityEngine;
 public class mob : MonoBehaviour
 {
     bool a;
-    public Manager m;
     // Start is called before the first frame update
     void Start()
     {
-        
+        InvokeRepeating("A", 3f, 3f);
     }
 
     // Update is called once per frame
     void Update()
     {
-        DeadCheck();
+        Move();
     }
 
     void Move()
@@ -30,20 +29,11 @@ public class mob : MonoBehaviour
         }
     }
 
-    void DeadCheck()
+
+    void A()
     {
-        if (m.gameover == false)
-        {
-            Move();
-        }
-        else
-        {
-            return;
-        }
+        a = !a;
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        a = true;
-    }
+
 }
